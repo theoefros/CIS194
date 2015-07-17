@@ -73,32 +73,49 @@ takeJ n jl@(Append m l r)
   | n <= ls = takeJ n l
   | n > ls  = l +++ takeJ (n - ls) r
   where ls = getSize . size $ tag l
-  
+
+-- Calculate the score of a line, then make a JoinList Score String from that
+-- line
 scoreLine :: String -> JoinList Score String
 scoreLine e = Single (scoreString e) e
 
+
+-- A Buffer instance for the type JoinList (Score, Size) String
 instance Buffer (JoinList (Score, Size) String) where
-  toString     = mconcat . jlToList
-  fromString s  = Single (scoreString s, Size $ length s) s
+  toString     = unlines . jlToList
+  
+  fromString s  = foldr (+++) Empty $ map single $ lines s
+    where single str = Single (scoreString str, 1) str
+  
   line n b     = indexJ n b
-  replaceLine n l b = undefined
+-- 0 1 2
+  -- replaceLine :: Int -> String -> JoinList (Score, Size) String -> JoinList (Score, Size) String
+  replaceLine n l b 
+    | n < 0 || n >= numLines b = b
+    | otherwise = takeJ n b +++ single l +++ dropJ (n + 1) b
+      where single str = Single (scoreString str, 1) str
   --replaceLine n l b = unlines . uncurry replaceLine' . splitAt n . lines $ b
       --where replaceLine' pre [] = pre
             --replaceLine' pre (_:ls) = pre ++ l:ls
   numLines     = getSize . snd . tag 
+  
   value        = getScore . fst . tag
 
+  
+-- | Safe indexing function for regular list, for testing purposes
 (!!?) :: [a] -> Int -> Maybe a
 [] !!? _ = Nothing
 _ !!? i | i < 0 = Nothing
 (x:xs) !!? 0 = Just x
 (x:xs) !!? i = xs !!? (i-1)
 
+-- | Convert a JoinList m a to a regular list [a]
 jlToList :: JoinList m a -> [a]
 jlToList Empty = []
 jlToList (Single _ a) = [a]
 jlToList (Append _ l1 l2) = jlToList l1 ++ jlToList l2
 
+-- | A JoinList for testing
 jl :: JoinList Size Char
 jl = Append (Size 4)
     (Append (Size 3)
