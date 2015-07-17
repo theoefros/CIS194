@@ -50,9 +50,9 @@ moreFun = max
 -- Exercise 2
 
 -- Implement the fold function for Data.Tree
-treeFold :: (a -> b -> b) -> b -> Tree a -> b
+treeFold :: (a -> [b] -> b) -> [b] -> Tree a -> b
 treeFold f acc (Node x []) = f x acc
-treeFold f acc (Node x (y:_)) = f x (treeFold f acc y)
+treeFold f acc (Node x (y)) = f x (map (treeFold f acc) y)
 
 -- Exercise 3
 
@@ -64,14 +64,12 @@ treeFold f acc (Node x (y:_)) = f x (treeFold f acc y)
 -- compute the overall best guest list that includes boss and the overall best 
 -- guest list that doesn't include boss
 nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
--- nextLevel emp [] = (GL [emp] (empFun emp), GL [] 0)
-nextLevel emp gl = ( wBoss, glCons emp woBoss)
+nextLevel emp gl = (glCons emp woBoss, wBoss)
   where (wBoss, woBoss) = mconcat gl
         
 -- Exercise 4
 
 maxFun :: Tree Employee -> GuestList
-maxFun (Node e []) = GL [e] (empFun e)
--- treeFold nextLevel [] tree 
+maxFun = uncurry moreFun . treeFold nextLevel []
 
 
