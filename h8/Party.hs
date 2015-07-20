@@ -4,7 +4,7 @@
 import Employee
 import Data.Monoid
 import Data.Tree
-import Data.List (foldr1)
+import Data.List (foldr1, sort)
 
 
 bob = Emp { empName = "Bob", empFun = 1}
@@ -71,5 +71,27 @@ nextLevel emp gl = (glCons emp woBoss, wBoss)
 
 maxFun :: Tree Employee -> GuestList
 maxFun = uncurry moreFun . treeFold nextLevel []
+
+-- Exercise 5
+
+-- Implement main :: IO () so that it reads company's hierarcy from the file
+-- company.txt, and then prints out a formatted gurest list, sorted by first
+-- name
+
+main :: IO ()
+main = do
+  companyFile <- readFile "company.txt"
+  -- convert the contents of the file into Tree Employee and then find the 
+  -- guestList
+  let empTree = read companyFile :: Tree Employee
+  let guestList = maxFun empTree
+  -- Use mapM_ putStrLn to print out the formatted guestList
+  mapM_ putStrLn (formatGL guestList)
+
+-- Make a [String] out of GuestList
+formatGL :: GuestList -> [String]
+formatGL (GL xs fun) = firstLine : sortedGL
+  where firstLine = "Total fun: " ++ show fun
+        sortedGL = map empName (sort xs)
 
 

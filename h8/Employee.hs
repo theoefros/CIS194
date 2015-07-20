@@ -12,6 +12,11 @@ type Fun  = Integer
 -- An Employee consists of a name and a fun score.
 data Employee = Emp { empName :: Name, empFun :: Fun }
   deriving (Show, Read, Eq)
+  
+-- Make Employee an instance of Ord typeclass, sorting by employee name
+-- This way [Employee] can be sorted by Data.List.sort
+instance Ord Employee where
+  compare e1 e2 = empName e1 `compare` empName e2
 
 -- A small company hierarchy to use for testing purposes.
 testCompany :: Tree Employee
